@@ -1,8 +1,12 @@
 #include "HomeSpan.h" 
 #include "DigooTH.h"
 
-#include <homeGW.h>
-#include <digoo.h>
+#include "homeGW.h"
+#include "digoo.h"
+
+#include <esp_task_wdt.h>
+
+#define WDT_TIMEOUT 20 
 
 DigooData s_ch1;
 DigooData s_ch2;
@@ -18,9 +22,14 @@ uint8_t current_ch = 0;
 void setup() {
   Serial.begin(115200);
   homespanInit();
+  LOG1("Configuring WDT...");
+  esp_task_wdt_init(WDT_TIMEOUT, false);
+  esp_task_wdt_add(NULL);
+  
   while (!homeSpan.connected){
     homeSpan.poll();
     }
+  esp_task_wdt_reset();
   gw.setup(RF_RECEIVER_PIN);
   gw.registerPlugin(&DigooStation); 
 
@@ -35,8 +44,8 @@ void homespanInit(){
   homeSpan.setStatusPin(2);
   homeSpan.setLogLevel(1);
 
-  homeSpan.setSketchVersion("0.0.1");
-  //homeSpan.enableOTA();
+  homeSpan.setSketchVersion("0.0.2");
+  homeSpan.enableOTA(); //homespan-ota
   
   homeSpan.begin(Category::Sensors,"Digoo");
   ///channel 1
@@ -47,7 +56,7 @@ void homespanInit(){
       new Characteristic::Manufacturer("Danil"); 
       new Characteristic::SerialNumber("0000001"); 
       new Characteristic::Model("ch1"); 
-      new Characteristic::FirmwareRevision("0.0.1"); 
+      new Characteristic::FirmwareRevision("0.0.2"); 
       new Characteristic::Identify();            
       
     new Service::HAPProtocolInformation();      
@@ -63,7 +72,7 @@ void homespanInit(){
       new Characteristic::Manufacturer("Danil"); 
       new Characteristic::SerialNumber("0000001"); 
       new Characteristic::Model("ch2"); 
-      new Characteristic::FirmwareRevision("0.0.1"); 
+      new Characteristic::FirmwareRevision("0.0.2"); 
       new Characteristic::Identify();            
       
     new Service::HAPProtocolInformation();      
@@ -78,7 +87,7 @@ void homespanInit(){
       new Characteristic::Manufacturer("Danil"); 
       new Characteristic::SerialNumber("0000001"); 
       new Characteristic::Model("ch3"); 
-      new Characteristic::FirmwareRevision("0.0.1"); 
+      new Characteristic::FirmwareRevision("0.0.2"); 
       new Characteristic::Identify();            
       
     new Service::HAPProtocolInformation();      
@@ -88,9 +97,10 @@ void homespanInit(){
 }
 
 void loop() {
+  esp_task_wdt_reset();
   uint64_t p = 0;
   homeSpan.poll();
-  gpio_intr_enable(gpio_num_t(RF_RECEIVER_PIN));
+  //gpio_intr_enable(gpio_num_t(RF_RECEIVER_PIN));
   if(DigooStation.available()) 
     if((p = DigooStation.getPacket())) {
       if(p == prev_p) {
