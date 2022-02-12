@@ -20,7 +20,7 @@ struct Digoo : Service::TemperatureSensor {         // First we create a derived
     LOG1("Constructing digoo…\n");
     this->Data = Data;
     CurrentTemperature=new Characteristic::CurrentTemperature(25);// this is where we create the On Characterstic we had previously defined in setup().  Save this in the pointer created above, for use below
-    new SpanRange(-50, 100, 1);
+    CurrentTemperature->setRange(-50, 100, 0.1);
     StatusActive=new Characteristic::StatusActive(true);
     StatusLowBattery=new Characteristic::StatusLowBattery(1);
     

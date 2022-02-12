@@ -56,7 +56,7 @@ void homespanInit(){
       new Characteristic::Manufacturer("Danil"); 
       new Characteristic::SerialNumber("0000001"); 
       new Characteristic::Model("ch1"); 
-      new Characteristic::FirmwareRevision("0.0.2"); 
+      new Characteristic::FirmwareRevision("0.0.3"); 
       new Characteristic::Identify();            
       
     new Service::HAPProtocolInformation();      
