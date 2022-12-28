@@ -13,7 +13,12 @@ DigooData s_ch1;
 DigooData s_ch2;
 DigooData s_ch3;
 
-DigooData* DigooChannelArray[3] = {&s_ch1, &s_ch2, &s_ch3};
+DigooData w_ch1;
+DigooData w_ch2;
+DigooData w_ch3;
+
+DigooData* DigooChannelArray[3]   = {&s_ch1, &s_ch2, &s_ch3};
+DigooData* WeatherChannelArray[3] = {&w_ch1, &w_ch2, &w_ch3};
 
 HomeGW gw(2); //  is the number of plugins to be registered 
 digoo DigooStation;
@@ -53,7 +58,7 @@ void homespanInit(){
     new Service::AccessoryInformation(); 
       new Characteristic::Name("Digoo ch1 sensor"); 
       new Characteristic::Manufacturer("Danil"); 
-      new Characteristic::SerialNumber("0000001"); 
+      new Characteristic::SerialNumber("DG00001"); 
       new Characteristic::Model("ch1"); 
       new Characteristic::FirmwareRevision("0.0.3"); 
       new Characteristic::Identify();            
@@ -69,7 +74,7 @@ void homespanInit(){
     new Service::AccessoryInformation(); 
       new Characteristic::Name("Digoo ch2 sensor"); 
       new Characteristic::Manufacturer("Danil"); 
-      new Characteristic::SerialNumber("0000001"); 
+      new Characteristic::SerialNumber("DG00002"); 
       new Characteristic::Model("ch2"); 
       new Characteristic::FirmwareRevision("0.0.2"); 
       new Characteristic::Identify();            
@@ -84,7 +89,7 @@ void homespanInit(){
     new Service::AccessoryInformation(); 
       new Characteristic::Name("Digoo ch3 sensor"); 
       new Characteristic::Manufacturer("Danil"); 
-      new Characteristic::SerialNumber("0000001"); 
+      new Characteristic::SerialNumber("DG00003"); 
       new Characteristic::Model("ch3"); 
       new Characteristic::FirmwareRevision("0.0.2"); 
       new Characteristic::Identify();            
@@ -93,6 +98,23 @@ void homespanInit(){
       new Characteristic::Version("1.1.0"); 
   
     new Digoo(&s_ch3);
+
+
+  ///weather station sensor channel 1
+  new SpanAccessory(); 
+  
+    new Service::AccessoryInformation(); 
+      new Characteristic::Name("WS ch1 sensor"); 
+      new Characteristic::Manufacturer("Danil"); 
+      new Characteristic::SerialNumber("WS00001"); 
+      new Characteristic::Model("ch1"); 
+      new Characteristic::FirmwareRevision("0.0.3"); 
+      new Characteristic::Identify();            
+      
+    new Service::HAPProtocolInformation();      
+      new Characteristic::Version("1.1.0"); 
+  
+    new Digoo(&w_ch1); 
 }
 
 void loop() {
@@ -103,6 +125,15 @@ void loop() {
   if(WeatherStation.available()) {
     if((p = WeatherStation.getPacket())) {
        if(p == prev_p) {
+        current_ch = WeatherStation.getChannel(p);
+        if (current_ch != 1) return;
+                
+        WeatherChannelArray[current_ch - 1] ->batt        = !WeatherStation.getBattery(p);
+        WeatherChannelArray[current_ch - 1] ->temperature = WeatherStation.getTemperature(p);
+        WeatherChannelArray[current_ch - 1] ->humidity    = (double)WeatherStation.getHumidity(p);
+        WeatherChannelArray[current_ch - 1] ->updated     = millis();
+        WeatherChannelArray[current_ch - 1] ->isNew[0]    = true;
+        WeatherChannelArray[current_ch - 1] ->isNew[1]    = true;
         
         LOG1("Weather:    ");     LOG1(WeatherStation.getString(p));      LOG1(" ");
         LOG1("ID: ");             LOG1(WeatherStation.getId(p));          LOG1(" ");
