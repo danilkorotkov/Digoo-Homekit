@@ -34,7 +34,7 @@ struct Digoo : Service::TemperatureSensor {         // First we create a derived
 
   void loop(){                                     // loop() method
     if ( (millis() - Data->updated) > activeTimeout ){
-      LOG1("sensor timeout\n");
+      //LOG1("sensor timeout\n");
       if (StatusActive -> getVal()) {StatusActive->setVal(false);}
       return;
     }
