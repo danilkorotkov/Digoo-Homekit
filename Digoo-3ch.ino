@@ -1,13 +1,16 @@
-#include "HomeSpan.h" 
+#include <ArduinoJson.h>
+
+#include "HomeSpan.h" // homespan-ota
 #include "DigooTH.h"
 
 #include "homeGW.h"
 #include "digoo.h"
 #include "weather.h"
+#include "fanju.h"
 
 #include <esp_task_wdt.h>
 
-#define WDT_TIMEOUT 20 
+#define WDT_TIMEOUT 100 
 
 DigooData s_ch1;
 DigooData s_ch2;
@@ -20,9 +23,11 @@ DigooData w_ch3;
 DigooData* DigooChannelArray[3]   = {&s_ch1, &s_ch2, &s_ch3};
 DigooData* WeatherChannelArray[3] = {&w_ch1, &w_ch2, &w_ch3};
 
-HomeGW gw(2); //  is the number of plugins to be registered 
+HomeGW gw(3); //  is the number of plugins to be registered 
 digoo DigooStation;
 weather WeatherStation;
+fanju FanjuStation;
+
 uint64_t prev_p = 0;
 uint8_t current_ch = 0;
 #define RF_RECEIVER_PIN 22 // D2
@@ -31,7 +36,8 @@ void setup() {
   Serial.begin(115200);
   gw.setup(RF_RECEIVER_PIN);
   gw.registerPlugin(&DigooStation); 
-  gw.registerPlugin(&WeatherStation); 
+  gw.registerPlugin(&WeatherStation);
+  gw.registerPlugin(&FanjuStation);  
     
   LOG1("Configuring WDT...\n");
   esp_task_wdt_init(WDT_TIMEOUT, false);
@@ -120,6 +126,7 @@ void homespanInit(){
 void loop() {
   esp_task_wdt_reset();
   uint64_t p = 0;
+  StaticJsonDocument<160> root;
   //gpio_intr_enable(gpio_num_t(RF_RECEIVER_PIN));
   
   if(WeatherStation.available()) {
@@ -148,7 +155,7 @@ void loop() {
     }
   }
   
-  if(DigooStation.available()) 
+  if(DigooStation.available()) {
     if((p = DigooStation.getPacket())) {
       if(p == prev_p) {
         current_ch = DigooStation.getChannel(p);
@@ -171,5 +178,32 @@ void loop() {
       }
       prev_p = p;
     }
+  }
+
+  if(FanjuStation.available()) { 
+    if((p = FanjuStation.getPacket())) {
+      if(p == prev_p) {
+/*        current_ch = DigooStation.getChannel(p);
+                
+        DigooChannelArray[current_ch - 1] ->batt        = !DigooStation.getBattery(p);
+        DigooChannelArray[current_ch - 1] ->temperature = DigooStation.getTemperature(p);
+        DigooChannelArray[current_ch - 1] ->humidity    = (double)DigooStation.getHumidity(p);
+        DigooChannelArray[current_ch - 1] ->updated     = millis();
+        DigooChannelArray[current_ch - 1] ->isNew[0]    = true;
+        DigooChannelArray[current_ch - 1] ->isNew[1]    = true;
+*/                
+        LOG1("Fanju:    ");     LOG1(FanjuStation.getString(p));      LOG1(" ");
+        LOG1("ID: ");           LOG1(FanjuStation.getId(p));          LOG1(" ");
+        LOG1("Channel: ");      LOG1(FanjuStation.getChannel(p));     LOG1(" ");
+        LOG1("Battery: ");      LOG1(FanjuStation.getBattery(p));     LOG1(" ");        
+        LOG1("Temperature: ");  LOG1(FanjuStation.getTemperature(p)); LOG1(" ");
+        LOG1("Humidity: ");     LOG1(FanjuStation.getHumidity(p));    LOG1("\n");
+        
+        p = 0;
+      }
+      prev_p = p;
+    }
+  }
+           
   homeSpan.poll();
 }
