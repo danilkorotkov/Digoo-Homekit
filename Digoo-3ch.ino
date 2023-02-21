@@ -134,14 +134,16 @@ void loop() {
        if(p == prev_p) {
         current_ch = WeatherStation.getChannel(p);
         if (current_ch != 1) return;
+
+        if (!WeatherStation.isValidWeather(p)) {
+          WeatherChannelArray[current_ch - 1] ->batt        = !WeatherStation.getBattery(p);
+          WeatherChannelArray[current_ch - 1] ->temperature = WeatherStation.getTemperature(p);
+          WeatherChannelArray[current_ch - 1] ->humidity    = (double)WeatherStation.getHumidity(p);
+          WeatherChannelArray[current_ch - 1] ->updated     = millis();
+          WeatherChannelArray[current_ch - 1] ->isNew[0]    = true;
+          WeatherChannelArray[current_ch - 1] ->isNew[1]    = true;
+        }
                 
-        WeatherChannelArray[current_ch - 1] ->batt        = !WeatherStation.getBattery(p);
-        WeatherChannelArray[current_ch - 1] ->temperature = WeatherStation.getTemperature(p);
-        WeatherChannelArray[current_ch - 1] ->humidity    = (double)WeatherStation.getHumidity(p);
-        WeatherChannelArray[current_ch - 1] ->updated     = millis();
-        WeatherChannelArray[current_ch - 1] ->isNew[0]    = true;
-        WeatherChannelArray[current_ch - 1] ->isNew[1]    = true;
-        
         LOG1("Weather:    ");     LOG1(WeatherStation.getString(p));      LOG1(" ");
         LOG1("ID: ");             LOG1(WeatherStation.getId(p));          LOG1(" ");
         LOG1("Channel: ");        LOG1(WeatherStation.getChannel(p));     LOG1(" ");
@@ -159,13 +161,16 @@ void loop() {
     if((p = DigooStation.getPacket())) {
       if(p == prev_p) {
         current_ch = DigooStation.getChannel(p);
-                
-        DigooChannelArray[current_ch - 1] ->batt        = !DigooStation.getBattery(p);
-        DigooChannelArray[current_ch - 1] ->temperature = DigooStation.getTemperature(p);
-        DigooChannelArray[current_ch - 1] ->humidity    = (double)DigooStation.getHumidity(p);
-        DigooChannelArray[current_ch - 1] ->updated     = millis();
-        DigooChannelArray[current_ch - 1] ->isNew[0]    = true;
-        DigooChannelArray[current_ch - 1] ->isNew[1]    = true;
+
+        if (!DigooStation.isValidWeather(p)){
+          DigooChannelArray[current_ch - 1] ->batt        = !DigooStation.getBattery(p);
+          DigooChannelArray[current_ch - 1] ->temperature = DigooStation.getTemperature(p);
+          DigooChannelArray[current_ch - 1] ->humidity    = (double)DigooStation.getHumidity(p);
+          DigooChannelArray[current_ch - 1] ->updated     = millis();
+          DigooChannelArray[current_ch - 1] ->isNew[0]    = true;
+          DigooChannelArray[current_ch - 1] ->isNew[1]    = true;
+        }
+        
                 
         LOG1("Digoo:    ");     LOG1(DigooStation.getString(p));      LOG1(" ");
         LOG1("ID: ");           LOG1(DigooStation.getId(p));          LOG1(" ");
