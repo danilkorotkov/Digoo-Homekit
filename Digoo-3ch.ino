@@ -20,8 +20,13 @@ DigooData w_ch1;
 DigooData w_ch2;
 DigooData w_ch3;
 
+DigooData f_ch1;
+DigooData f_ch2;
+DigooData f_ch3;
+
 DigooData* DigooChannelArray[3]   = {&s_ch1, &s_ch2, &s_ch3};
 DigooData* WeatherChannelArray[3] = {&w_ch1, &w_ch2, &w_ch3};
+DigooData* FanjuChannelArray[3]   = {&f_ch1, &f_ch2, &f_ch3};
 
 HomeGW gw(3); //  is the number of plugins to be registered 
 digoo DigooStation;
@@ -133,7 +138,6 @@ void loop() {
     if((p = WeatherStation.getPacket())) {
        if(p == prev_p) {
         current_ch = WeatherStation.getChannel(p);
-        if (current_ch != 1) return;
 
         if (!WeatherStation.isValidWeather(p)) {
           WeatherChannelArray[current_ch - 1] ->batt        = !WeatherStation.getBattery(p);
@@ -188,15 +192,15 @@ void loop() {
   if(FanjuStation.available()) { 
     if((p = FanjuStation.getPacket())) {
       if(p == prev_p) {
-/*        current_ch = DigooStation.getChannel(p);
+        current_ch = FanjuStation.getChannel(p);
                 
-        DigooChannelArray[current_ch - 1] ->batt        = !DigooStation.getBattery(p);
-        DigooChannelArray[current_ch - 1] ->temperature = DigooStation.getTemperature(p);
-        DigooChannelArray[current_ch - 1] ->humidity    = (double)DigooStation.getHumidity(p);
-        DigooChannelArray[current_ch - 1] ->updated     = millis();
-        DigooChannelArray[current_ch - 1] ->isNew[0]    = true;
-        DigooChannelArray[current_ch - 1] ->isNew[1]    = true;
-*/                
+        FanjuChannelArray[current_ch - 1] ->batt        = !FanjuStation.getBattery(p);
+        FanjuChannelArray[current_ch - 1] ->temperature = FanjuStation.getTemperature(p);
+        FanjuChannelArray[current_ch - 1] ->humidity    = (double)FanjuStation.getHumidity(p);
+        FanjuChannelArray[current_ch - 1] ->updated     = millis();
+        FanjuChannelArray[current_ch - 1] ->isNew[0]    = true;
+        FanjuChannelArray[current_ch - 1] ->isNew[1]    = true;
+                
         LOG1("Fanju:    ");     LOG1(FanjuStation.getString(p));      LOG1(" ");
         LOG1("ID: ");           LOG1(FanjuStation.getId(p));          LOG1(" ");
         LOG1("Channel: ");      LOG1(FanjuStation.getChannel(p));     LOG1(" ");
