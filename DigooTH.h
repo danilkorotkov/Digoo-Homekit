@@ -2,9 +2,9 @@ uint32_t activeTimeout = 5*60*1000 ; //5мин
 struct DigooData{
   uint32_t updated    = 0;
   float   temperature = 0;
-  double humidity     = 100;
+  double humidity     = 0;
   uint8_t batt        = 0;
-  bool    isNew[2]    = {true, true};
+  bool    isNew[2]    = {false, false};
   
 };
 
@@ -19,10 +19,10 @@ struct Digoo : Service::TemperatureSensor {         // First we create a derived
  
     LOG1("Constructing digoo…\n");
     this->Data = Data;
-    CurrentTemperature=new Characteristic::CurrentTemperature(25);// this is where we create the On Characterstic we had previously defined in setup().  Save this in the pointer created above, for use below
+    CurrentTemperature=new Characteristic::CurrentTemperature(25, true);// this is where we create the On Characterstic we had previously defined in setup().  Save this in the pointer created above, for use below
     CurrentTemperature->setRange(-50, 100, 0.1);
-    StatusActive=new Characteristic::StatusActive(true);
-    StatusLowBattery=new Characteristic::StatusLowBattery(1);
+    StatusActive=new Characteristic::StatusActive(true, true);
+    StatusLowBattery=new Characteristic::StatusLowBattery(1, true);
     
     LOG1(this->Data->humidity);         
     LOG1("Constructing Digoo successful!\n");
@@ -40,7 +40,7 @@ struct Digoo : Service::TemperatureSensor {         // First we create a derived
     }
     
     if (Data->isNew[0]){
-      LOG1("sensor update\n");
+      LOG1("temp sensor update\n");
       Data->isNew[0] = false;
       
       if (CurrentTemperature->getVal() != Data->temperature) {CurrentTemperature->setVal(Data->temperature);}
@@ -63,9 +63,9 @@ struct Digoo : Service::TemperatureSensor {         // First we create a derived
    
       LOG1("Constructing digooH…\n");
       this->DataH = Data;
-      CurrentRelativeHumidity=new Characteristic::CurrentRelativeHumidity(0);// this is where we create the On Characterstic we had previously defined in setup().  Save this in the pointer created above, for use below
-      StatusActive=new Characteristic::StatusActive(true);
-      StatusLowBattery=new Characteristic::StatusLowBattery(1); 
+      CurrentRelativeHumidity=new Characteristic::CurrentRelativeHumidity(0, true);// this is where we create the On Characterstic we had previously defined in setup().  Save this in the pointer created above, for use below
+      StatusActive=new Characteristic::StatusActive(true, true);
+      StatusLowBattery=new Characteristic::StatusLowBattery(1, true); 
 
       LOG1(this->DataH->humidity);         
       LOG1("Constructing Digoo successful!\n");
@@ -79,6 +79,7 @@ struct Digoo : Service::TemperatureSensor {         // First we create a derived
       }
       
       if (DataH->isNew[1]){
+        LOG1("hum sensor update\n");
         DataH->isNew[1] = false;
         
         if (CurrentRelativeHumidity->getVal() != DataH->humidity) {CurrentRelativeHumidity->setVal(DataH->humidity);}
