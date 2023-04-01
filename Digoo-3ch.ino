@@ -10,7 +10,7 @@
 
 #include <esp_task_wdt.h>
 
-#define WDT_TIMEOUT 100 
+#define WDT_TIMEOUT 150 
 
 HomeGW gw(3); //  is the number of plugins to be registered 
 digoo   DigooStation;
@@ -163,13 +163,6 @@ void loop() {
                   sens,
                   WeatherPlugin[plugin]->getChannel(p));
           }//valid weather
-
-          //LOG1(sens);               LOG1(WeatherPlugin[plugin]->getString(p));      LOG1(" ");
-          //LOG1("ID: ");             LOG1(WeatherPlugin[plugin]->getId(p));          LOG1(" ");
-          //LOG1("Channel: ");        LOG1(WeatherPlugin[plugin]->getChannel(p));     LOG1(" ");
-          //LOG1("Battery: ");        LOG1(WeatherPlugin[plugin]->getBattery(p));     LOG1(" ");        
-          //LOG1("Temperature: ");    LOG1(WeatherPlugin[plugin]->getTemperature(p)); LOG1(" ");
-          //LOG1("Humidity: ");       LOG1(WeatherPlugin[plugin]->getHumidity(p));    LOG1("\n");
                 
           char s[128];
           sprintf(s, "%s %s; ID: %d; Channel: %d; Battery: %s; Temperature: %.2f; Humidity: %d",
@@ -181,10 +174,10 @@ void loop() {
                     WeatherPlugin[plugin]->getTemperature(p),
                     WeatherPlugin[plugin]->getHumidity(p)); 
           String S = String(s);
-          if (!S.equals(prev_s)){WEBLOG("%s",s); prev_s = S;}
+          if (!S.equals(prev_s)){WEBLOG("%s",s); prev_s = S;}//reduce log output
 
           p = 0;
-        }//equal packet p == prev_p
+        }//if equal packet p == prev_p
         prev_p = p;
       }//valid packet
     }//valid plugin
