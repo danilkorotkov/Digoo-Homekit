@@ -5,6 +5,7 @@ struct DigooData{
   double humidity     = 0;
   uint8_t batt        = 0;
   bool    isNew[2]    = {false, false};
+  uint8_t id          = 0;
   
 };
 

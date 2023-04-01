@@ -30,6 +30,7 @@ String    PluginName[3]        = {"Digoo:    ", "Weather:   ", "Fanju:    "};
 DigooData **AllPluginArrays[3] = {DigooChannelArray, WeatherChannelArray, FanjuChannelArray};
 
 uint64_t prev_p = 0;
+String   prev_s;
 uint8_t current_ch = 0;
 #define RF_RECEIVER_PIN 22 // D2
 
@@ -143,13 +144,25 @@ void loop() {
                              
           if (!WeatherPlugin[plugin]->isValidWeather(p)) {
             
-            tData ->batt        = !WeatherPlugin[plugin]->getBattery(p); LOG1("batt ok\n "); 
-            tData ->temperature = WeatherPlugin[plugin]->getTemperature(p); LOG1("temp ok\n "); 
-            tData ->humidity    = (double)WeatherPlugin[plugin]->getHumidity(p); LOG1("hum ok\n "); 
-            tData ->updated     = millis(); LOG1("millis ok\n "); 
-            tData ->isNew[0]    = true;
-            tData ->isNew[1]    = true;
-          }
+            if (tData ->id == WeatherPlugin[plugin]->getId(p)){
+              tData ->batt        = !WeatherPlugin[plugin]->getBattery(p);
+              tData ->temperature = WeatherPlugin[plugin]->getTemperature(p);
+              tData ->humidity    = (double)WeatherPlugin[plugin]->getHumidity(p);
+              tData ->updated     = millis(); LOG1("millis ok\n "); 
+              tData ->isNew[0]    = true;
+              tData ->isNew[1]    = true;
+            }else{
+              tData ->id          = WeatherPlugin[plugin]->getId(p);
+              WEBLOG("%s on %d channel sends new ID",
+                  sens,
+                  WeatherPlugin[plugin]->getChannel(p));
+            }//tdata id
+          
+          }else{           
+            WEBLOG("%s on %d channel sends invalid data",
+                  sens,
+                  WeatherPlugin[plugin]->getChannel(p));
+          }//valid weather
 
           //LOG1(sens);               LOG1(WeatherPlugin[plugin]->getString(p));      LOG1(" ");
           //LOG1("ID: ");             LOG1(WeatherPlugin[plugin]->getId(p));          LOG1(" ");
@@ -158,21 +171,24 @@ void loop() {
           //LOG1("Temperature: ");    LOG1(WeatherPlugin[plugin]->getTemperature(p)); LOG1(" ");
           //LOG1("Humidity: ");       LOG1(WeatherPlugin[plugin]->getHumidity(p));    LOG1("\n");
                 
-          WEBLOG("%s %s; ID: %d; Channel: %d; Battery: %s; Temperature: %.2f; Humidity: %d",
-                sens,
-                WeatherPlugin[plugin]->getString(p), 
-                WeatherPlugin[plugin]->getId(p), 
-                WeatherPlugin[plugin]->getChannel(p),
-                WeatherPlugin[plugin]->getBattery(p)?"FULL":"LOW",
-                WeatherPlugin[plugin]->getTemperature(p),
-                WeatherPlugin[plugin]->getHumidity(p)); 
+          char s[128];
+          sprintf(s, "%s %s; ID: %d; Channel: %d; Battery: %s; Temperature: %.2f; Humidity: %d",
+                    sens,
+                    WeatherPlugin[plugin]->getString(p), 
+                    WeatherPlugin[plugin]->getId(p), 
+                    WeatherPlugin[plugin]->getChannel(p),
+                    WeatherPlugin[plugin]->getBattery(p)?"FULL":"LOW",
+                    WeatherPlugin[plugin]->getTemperature(p),
+                    WeatherPlugin[plugin]->getHumidity(p)); 
+          String S = String(s);
+          if (!S.equals(prev_s)){WEBLOG("%s",s); prev_s = S;}
 
           p = 0;
-        }
+        }//equal packet p == prev_p
         prev_p = p;
-      }
-    }
-  }
+      }//valid packet
+    }//valid plugin
+  }//plugin for cycle 
 
 /*
   if(WeatherStation.available()) {
